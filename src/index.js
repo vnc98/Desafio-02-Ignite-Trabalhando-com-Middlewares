@@ -11,18 +11,69 @@ const users = [];
 
 function checksExistsUserAccount(request, response, next) {
   // Complete aqui
+  const {username } = request.headers
+
+  const [findUser] = users.filter(user => user.username === username);
+
+  if(!findUser) {
+    return  response.status(404).json({error: "User not exists"})
+  }
+
+  request.user = findUser;
+  next()
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   // Complete aqui
+  const {user} = request;
+
+  if(!user.pro && user.todos.length >= 10) {
+    return response.status(403).json({error: "you not have permission"})
+  }
+
+  next()
 }
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const {username} = request.headers;
+  const {id} = request.params;
+
+  const [findUser] = users.filter(user => user.username === username);
+
+  if(!findUser) {
+    return  response.status(404).json({error: "User not exists"})
+  }
+
+  const [todoFind] = findUser.todos.filter(todo => todo.id === id)
+
+  if(!validate(id)) {
+    return  response.status(400).json({error: "id Todo must be an uuid"})
+  }
+
+  if(!todoFind){
+    return  response.status(404).json({error: "User Todo not exists"})
+  }
+
+  request.todo = todoFind;
+  request.user = findUser;
+
+  next()
 }
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const {id} = request.params;
+
+  const [userFind] = users.filter(user => user.id === id);
+
+  if(!userFind) {
+    return response.status(404).json({error: "User not find"})
+  }
+
+  request.user = userFind;
+
+  next()
 }
 
 app.post('/users', (request, response) => {
